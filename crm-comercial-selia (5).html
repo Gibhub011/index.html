@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programa Selia · CRM Comercial</title>
+<style>
+  :root{
+    --nav:#101728;          /* sidebar */
+    --nav-2:#0b1120;
+    --nav-active:#2563eb;
+    --bg:#f5f7fb;
+    --card:#ffffff;
+    --ink:#0f172a;
+    --ink-2:#475569;
+    --ink-3:#94a3b8;
+    --line:#e6eaf1;
+    --blue:#2563eb;
+    --blue-soft:#eff4ff;
+    --green:#16a34a;
+    --green-soft:#e9f8ef;
+    --red:#e23b46;
+    --red-soft:#fdeced;
+    --amber:#e08a17;
+    --amber-soft:#fdf3e3;
+    --violet:#7c3aed;
+    --violet-soft:#f1ecfe;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(16,23,40,.06), 0 1px 3px rgba(16,23,40,.05);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45}
+  button{font-family:inherit;cursor:pointer;border:none;background:none}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:9px}
+
+  .app{display:flex;min-height:100vh}
+
+  /* ---------- SIDEBAR ---------- */
+  .side{width:226px;background:var(--nav);color:#cbd5e1;flex:none;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+  .brand{padding:20px 22px;font-weight:700;color:#fff;font-size:16px;letter-spacing:.2px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .nav{padding:10px 12px;flex:1;overflow-y:auto}
+  .nav-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:#64748b;padding:14px 12px 6px}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:9px;color:#cbd5e1;font-size:13.5px;width:100%;text-align:left;transition:.12s}
+  .nav-item:hover{background:rgba(255,255,255,.05);color:#fff}
+  .nav-item.active{background:var(--nav-active);color:#fff;font-weight:600}
+  .nav-item .ico{width:17px;text-align:center;opacity:.85}
+  .nav-item .badge{margin-left:auto;background:rgba(255,255,255,.14);color:#fff;font-size:11px;padding:1px 7px;border-radius:20px;font-weight:600}
+  .nav-item.active .badge{background:rgba(255,255,255,.25)}
+  .nav-sub{padding-left:30px;font-size:13px;color:#93a2b8}
+  .side-foot{padding:14px 20px;border-top:1px solid rgba(255,255,255,.07);font-size:12px;color:#8a99af}
+  .side-foot b{color:#e2e8f0;display:block;font-size:13px;font-weight:600}
+
+  /* ---------- MAIN ---------- */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{padding:20px 28px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+  .h-ico{width:42px;height:42px;border-radius:11px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:19px;flex:none}
+  .h-wrap{display:flex;gap:14px;align-items:center}
+  h1{font-size:21px;font-weight:700;letter-spacing:-.2px}
+  .sub{color:var(--ink-2);font-size:13px;margin-top:2px}
+  .rt{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2);background:#fff;border:1px solid var(--line);padding:7px 12px;border-radius:8px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px var(--green-soft);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  .content{padding:22px 28px 40px}
+
+  /* stat cards */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px}
+  .stat .sicon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex:none}
+  .stat .n{font-size:23px;font-weight:700;letter-spacing:-.5px;line-height:1.1}
+  .stat .l{font-size:12px;color:var(--ink-2);display:flex;align-items:center;gap:7px;margin-top:1px}
+  .stat .l .pin{width:9px;height:9px;border-radius:3px}
+
+  /* CRM top bar + filters */
+  .crm-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .crm-tabs{display:flex;gap:8px;flex-wrap:wrap}
+  .crm-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .filter-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;box-shadow:var(--shadow)}
+  .ff{display:flex;flex-direction:column;gap:5px}
+  .ff label{font-size:11.5px;color:var(--ink-2);font-weight:600}
+  .ff input,.ff select{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--ink);outline:none;background:#fff}
+  .prio-cell{display:inline-flex;align-items:center;gap:7px}
+  .prio-sel{border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12.5px;font-weight:600;color:var(--ink);background:#fff;cursor:pointer;outline:none}
+  tr.lb-sin_gestionar{border-left:3px solid #6366f1}
+  @media(max-width:760px){.filter-row{grid-template-columns:1fr 1fr}}
+
+  /* description banner */
+  .banner{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:10px;padding:13px 16px;margin-bottom:18px;font-size:13px;color:var(--ink-2);display:flex;gap:11px}
+  .banner b{color:var(--ink)}
+  .banner .bico{font-size:16px}
+
+  /* toolbar */
+  .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .search{flex:1;min-width:200px;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 13px;color:var(--ink-3);font-size:13.5px}
+  .search input{border:none;outline:none;flex:1;font-size:13.5px;color:var(--ink)}
+  .filter-chip{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 13px;font-size:13px;color:var(--ink-2)}
+
+  /* table */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  table{width:100%;border-collapse:collapse}
+  thead th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-3);font-weight:600;padding:13px 16px;border-bottom:1px solid var(--line);background:#fbfcfe}
+  tbody td{padding:13px 16px;border-bottom:1px solid #f1f4f9;font-size:13.5px;vertical-align:middle}
+  tbody tr{transition:background .1s}
+  tbody tr:hover{background:#fafbfe}
+  tbody tr:last-child td{border-bottom:none}
+  .name{font-weight:600;cursor:pointer}
+  .name:hover{color:var(--blue)}
+  .tel{color:var(--ink-2);font-variant-numeric:tabular-nums}
+  .muted{color:var(--ink-3);font-size:12.5px}
+
+  /* row tint */
+  tr.tint-red{background:var(--red-soft)!important}
+  tr.tint-green{background:var(--green-soft)!important}
+  tr.tint-amber{background:var(--amber-soft)!important}
+  tr.tint-violet{background:var(--violet-soft)!important}
+  tr.tint-gray{background:#f7f8fa!important}
+
+  /* big buttons + lock screen */
+  .btn-lg{padding:9px 15px;font-size:13px}
+  .lock{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:48px 32px;text-align:center;max-width:560px;margin:30px auto}
+  .lock-ico{font-size:42px;margin-bottom:8px}
+  .lock h2{font-size:19px;margin-bottom:8px}
+  .lock p{color:var(--ink-2);font-size:14px;max-width:420px;margin:0 auto 20px;line-height:1.5}
+  .lock-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .lock-note{margin-top:18px;font-size:12.5px;color:var(--ink-3)}
+
+  /* pills */
+  .pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
+  .pill.blue{background:var(--blue-soft);color:var(--blue)}
+  .pill.green{background:var(--green-soft);color:var(--green)}
+  .pill.red{background:var(--red-soft);color:var(--red)}
+  .pill.amber{background:var(--amber-soft);color:var(--amber)}
+  .pill.violet{background:var(--violet-soft);color:var(--violet)}
+  .pill.gray{background:#eef1f6;color:var(--ink-2)}
+
+  .prio{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600}
+  .prio .pdot{width:9px;height:9px;border-radius:50%}
+
+  /* laura state */
+  .laura{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600}
+  .laura.on{color:var(--green)}
+  .laura.off{color:var(--ink-3)}
+  .laura .wave{display:inline-flex;gap:2px;align-items:flex-end;height:11px}
+  .laura .wave i{width:2.5px;background:var(--green);border-radius:2px;animation:wv .9s infinite ease-in-out}
+  .laura .wave i:nth-child(1){height:5px;animation-delay:0s}
+  .laura .wave i:nth-child(2){height:11px;animation-delay:.15s}
+  .laura .wave i:nth-child(3){height:7px;animation-delay:.3s}
+  @keyframes wv{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1)}}
+
+  .calls{font-weight:700;font-variant-numeric:tabular-nums}
+  .calls .of{color:var(--ink-3);font-weight:500;font-size:12px}
+
+  /* action buttons */
+  .acts{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:8px;font-size:12.5px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--ink-2);transition:.12s;white-space:nowrap}
+  .btn:hover{border-color:#c9d3e3;background:#fafbfe}
+  .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+  .btn.primary:hover{background:#1d4ed8}
+  .btn.danger{color:var(--red)}
+  .btn.danger:hover{background:var(--red-soft);border-color:#f3c2c5}
+  .btn.warn{color:var(--amber)}
+  .btn.warn:hover{background:var(--amber-soft)}
+  .btn.ghost-green{color:var(--green)}
+  .btn.ghost-green:hover{background:var(--green-soft);border-color:#bce8cd}
+  .icon-btn{width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--ink-3);border:1px solid transparent}
+  .icon-btn:hover{background:#f1f4f9;color:var(--ink)}
+
+  /* CRM row controls */
+  .estado-sel{font-size:12.5px;font-weight:600;border:1px solid var(--line);border-radius:8px;padding:6px 9px;background:#fff;color:var(--ink);cursor:pointer;outline:none}
+  .stepper{display:inline-flex;align-items:center;gap:7px}
+  .stepper button{width:22px;height:22px;border:1px solid var(--line);border-radius:6px;color:var(--ink-2);font-weight:700;line-height:1}
+  .stepper button:hover{background:#f1f4f9}
+  .stepper .cn{font-weight:700;min-width:12px;text-align:center;font-variant-numeric:tabular-nums}
+  .lnk{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:5px 8px;border-radius:7px;color:var(--ink-2);white-space:nowrap}
+  .lnk:hover{background:#f1f4f9}
+  .lnk.green{color:var(--green)} .lnk.green:hover{background:var(--green-soft)}
+  .lnk.red{color:var(--red)} .lnk.red:hover{background:var(--red-soft)}
+  .lnk.amber{color:var(--amber)} .lnk.amber:hover{background:var(--amber-soft)}
+  .lnk.blue{color:var(--blue)} .lnk.blue:hover{background:var(--blue-soft)}
+  tr.lb-urgente{border-left:3px solid var(--red)} tr.lb-alta{border-left:3px solid var(--amber)}
+  tr.lb-media{border-left:3px solid var(--blue)} tr.lb-baja{border-left:3px solid #cbd5e1}
+  /* priority filter chips */
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--ink-2)}
+  .chip:hover{border-color:#c9d3e3}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip .pdot{width:9px;height:9px;border-radius:50%}
+  .chip .cc{background:#eef1f6;color:var(--ink-2);border-radius:20px;padding:0 7px;font-size:11px}
+  .chip.on .cc{background:rgba(255,255,255,.22);color:#fff}
+
+  /* motivo cell */
+  .motivo{max-width:280px}
+  .motivo .t{font-weight:600;margin-bottom:2px}
+  .motivo .m{color:var(--ink-2);font-size:12.5px;line-height:1.35}
+
+  /* KANBAN (crm comercial) */
+  .kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start}
+  .col{background:#eef1f6;border-radius:var(--radius);padding:10px;min-height:120px}
+  .col-head{display:flex;align-items:center;gap:8px;padding:5px 7px 11px;font-weight:700;font-size:13.5px}
+  .col-head .pdot{width:10px;height:10px;border-radius:50%}
+  .col-head .ct{margin-left:auto;background:#fff;color:var(--ink-2);font-size:11.5px;padding:1px 8px;border-radius:20px;border:1px solid var(--line)}
+  .kcard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:9px;box-shadow:var(--shadow);cursor:pointer;border-left:3px solid transparent}
+  .kcard:hover{border-color:#c9d3e3}
+  .kcard .kname{font-weight:600;margin-bottom:6px}
+  .kcard .ktel{font-size:12px;color:var(--ink-2);margin-bottom:8px;font-variant-numeric:tabular-nums}
+  .kcard .kmotivo{font-size:12px;color:var(--ink-2);background:#f8fafc;border-radius:7px;padding:7px 9px;margin-bottom:9px;line-height:1.35}
+  .kcard .kfoot{display:flex;align-items:center;gap:7px;justify-content:space-between}
+  .kcard .kfoot .ag{font-size:11.5px;color:var(--ink-3)}
+  .kcard .kacts{display:flex;gap:5px}
+  .empty-col{text-align:center;color:var(--ink-3);font-size:12px;padding:18px 8px}
+
+  /* drawer */
+  .scrim{position:fixed;inset:0;background:rgba(15,23,42,.35);opacity:0;pointer-events:none;transition:.2s;z-index:40}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;height:100vh;width:440px;max-width:92vw;background:#fff;box-shadow:-8px 0 30px rgba(16,23,40,.14);transform:translateX(100%);transition:transform .24s cubic-bezier(.4,0,.2,1);z-index:50;display:flex;flex-direction:column}
+  .drawer.show{transform:none}
+  .dr-head{padding:20px 22px;border-bottom:1px solid var(--line)}
+  .dr-head .x{position:absolute;top:18px;right:18px}
+  .dr-name{font-size:18px;font-weight:700}
+  .dr-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+  .dr-body{padding:20px 22px;overflow-y:auto;flex:1}
+  .dr-sec-t{font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-3);font-weight:600;margin:18px 0 10px}
+  .kv{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed #eef1f6;font-size:13px}
+  .kv .k{color:var(--ink-2)}
+  .kv .v{font-weight:600}
+  /* timeline */
+  .tl{position:relative;padding-left:22px;margin-top:6px}
+  .tl::before{content:"";position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:var(--line)}
+  .tl-item{position:relative;padding:0 0 16px}
+  .tl-item::before{content:"";position:absolute;left:-22px;top:3px;width:11px;height:11px;border-radius:50%;background:#fff;border:2.5px solid var(--blue)}
+  .tl-item.ok::before{border-color:var(--green)}
+  .tl-item.bad::before{border-color:var(--red)}
+  .tl-item.warn::before{border-color:var(--amber)}
+  .tl-when{font-size:11.5px;color:var(--ink-3);margin-bottom:2px}
+  .tl-what{font-size:13px}
+  .tl-what b{font-weight:600}
+  .json{background:var(--nav-2);color:#cbd5e1;border-radius:9px;padding:14px 15px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.6;overflow-x:auto;white-space:pre}
+  .json .key{color:#7dd3fc}.json .str{color:#86efac}.json .num{color:#fca5a5}
+  .dr-foot{padding:16px 22px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap}
+
+  /* flow diagram */
+  .flow{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+  .flow h3{font-size:15px;margin-bottom:4px}
+  .flow .fsub{color:var(--ink-2);font-size:13px;margin-bottom:22px}
+  .lanes{display:flex;flex-direction:column;gap:14px}
+  .lane{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .lane-src{background:var(--nav);color:#fff;border-radius:11px;padding:14px 18px;min-width:150px;text-align:center}
+  .lane-src .ls-t{font-weight:700;font-size:14px}
+  .lane-src .ls-s{font-size:11.5px;color:#9fb0c7;margin-top:3px}
+  .rule{flex:1;min-width:230px;background:#fbfcfe;border:1px dashed var(--line);border-radius:10px;padding:11px 14px;font-size:13px;color:var(--ink-2)}
+  .rule b{color:var(--ink)}
+  .arrow{color:var(--ink-3);font-size:20px;flex:none}
+  .dest{border-radius:10px;padding:12px 16px;font-weight:700;font-size:13.5px;min-width:170px;text-align:center;color:#fff}
+  .dest.nc{background:#475569}.dest.rev{background:var(--amber)}.dest.crm{background:var(--blue)}.dest.arch{background:#94a3b8}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}
+  .legend .li{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2)}
+  .legend .sw{width:26px;height:14px;border-radius:5px}
+
+  .hidden{display:none!important}
+
+  /* toast */
+  .toast-wrap{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:8px;align-items:center}
+  .toast{background:var(--nav);color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;box-shadow:0 8px 24px rgba(16,23,40,.25);display:flex;align-items:center;gap:9px;animation:up .25s ease}
+  .toast .ti{color:#7dd3fc}
+  @keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  @media(max-width:900px){
+    .side{display:none}
+    .kanban{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="side">
+    <div class="brand">Programa Selia</div>
+    <nav class="nav">
+      <button class="nav-item"><span class="ico">▦</span> Dashboard</button>
+      <button class="nav-item"><span class="ico">▤</span> Resúmenes</button>
+      <button class="nav-item"><span class="ico">◎</span> Llegada</button>
+      <button class="nav-item"><span class="ico">💬</span> Dronchat</button>
+      <button class="nav-item"><span class="ico">🪪</span> Lead ID</button>
+      <button class="nav-item"><span class="ico">▥</span> CRM General</button>
+
+      <div class="nav-label">CRM Comercial</div>
+      <button class="nav-item" data-view="nocontesta"><span class="ico">📵</span> No Contesta <span class="badge" data-count="nocontesta">0</span></button>
+      <button class="nav-item" data-view="revision"><span class="ico">🔍</span> Revisión <span class="badge" data-count="revision">0</span></button>
+      <button class="nav-item" data-view="pendiente"><span class="ico">🗂</span> Pendiente de gestionar <span class="badge" data-count="pendiente">0</span></button>
+      <button class="nav-item" data-view="crm"><span class="ico">👤</span> CRM Comercial <span class="badge" data-count="crm">0</span></button>
+      <button class="nav-item" data-view="archivados"><span class="ico">🗑</span> Archivados <span class="badge" data-count="archivados">0</span></button>
+
+      <div class="nav-label">Otros</div>
+      <button class="nav-item"><span class="ico">☰</span> Tareas</button>
+      <button class="nav-item"><span class="ico">▢</span> Pólizas</button>
+    </nav>
+    <div class="side-foot">
+      <b>francisco@selia.es</b>
+      Supremo
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="h-wrap">
+        <div class="h-ico" id="hIco">⤴</div>
+        <div>
+          <h1 id="hTitle">Vista general</h1>
+          <div class="sub" id="hSub">Cómo se enrutan los leads desde Laura hacia el equipo comercial</div>
+        </div>
+      </div>
+      <div class="rt"><span class="dot"></span> Tiempo real</div>
+    </div>
+
+    <div class="content" id="content"></div>
+  </main>
+</div>
+
+<!-- DRAWER -->
+<div class="scrim" id="scrim" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="dr-head" style="position:relative">
+    <button class="icon-btn x" onclick="closeDrawer()">✕</button>
+    <div class="dr-name" id="drName">—</div>
+    <div class="dr-tags" id="drTags"></div>
+  </div>
+  <div class="dr-body" id="drBody"></div>
+  <div class="dr-foot" id="drFoot"></div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ============ MODELO DE DATOS (mock) ============ */
+/* bolsa: nocontesta | revision | crm | archivados
+   tipo:  no_contesta | vendido | falta_iban | falta_iban_no_contesta | quiere_humano | quiere_poliza | falta_iban_problemas
+   prioridad (solo crm): urgente | alta | media | baja                                        */
+
+let LEADS = [
+  {id:1, nombre:"José Luis Vallejo Vivas", tel:"34669923201", bolsa:"revision", tipo:"vendido", lauraOn:true, llamadas:1,
+   motivo:"Cierre de la llamada confirmado. Falta validar datos antes de emitir póliza.", ult:"22 jun 16:23"},
+  {id:2, nombre:"Montserrat Pérez Riera", tel:"34722405128", bolsa:"revision", tipo:"falta_iban", lauraOn:true, llamadas:3,
+   motivo:"Presupuesto aceptado, interesada. No ha facilitado el IBAN todavía.", ult:"22 jun 16:04"},
+  {id:3, nombre:"Pepe Fernández", tel:"34669469680", bolsa:"nocontesta", tipo:"no_contesta", lauraOn:true, llamadas:31,
+   estadoGlobal:"No lo coge", estadoLead:"No lo coge", motivo:"31 llamadas sin contacto. Laura mantiene la cadencia.", ult:"23 jun 12:54"},
+  {id:4, nombre:"Ramón José González", tel:"34659467649", bolsa:"nocontesta", tipo:"no_contesta", lauraOn:true, llamadas:28,
+   estadoGlobal:"No puede hablar", estadoLead:"No puede hablar", motivo:"28 llamadas. Una vez descolgó y dijo 'no puede hablar'.", ult:"23 jun 12:48"},
+  {id:5, nombre:"Juan Pedro Villagómez", tel:"34608918582", bolsa:"nocontesta", tipo:"no_contesta", lauraOn:true, llamadas:29,
+   estadoGlobal:"No lo coge", estadoLead:"No lo coge", motivo:"29 llamadas sin contacto efectivo.", ult:"23 jun 12:31"},
+  {id:6, nombre:"Marisa Colmenar", tel:"34618182443", bolsa:"pendiente", tipo:"quiere_humano", agente:"Miguel Frías", lauraOn:false, llamadas:2, contactos:0, estadoVenta:"introduccion", fecha:"22/6 16:26",
+   motivo:"La clienta detectó que hablaba con una IA y pide hablar con una persona.", ult:"23 jun 12:26"},
+  {id:7, nombre:"Andrés García Larios", tel:"34661827097", bolsa:"crm", tipo:"falta_iban_no_contesta", prioridad:"urgente", agente:"Miguel Frías", lauraOn:false, llamadas:2, contactos:1, estadoVenta:"iban", fecha:"22/6 16:18",
+   motivo:"Quedó a las 18:00 para dar el IBAN. Laura llamó 2 veces y no coge.", ult:"22 jun 16:18"},
+  {id:8, nombre:"Edinson Agudelo", tel:"34623590987", bolsa:"crm", tipo:"falta_iban_problemas", prioridad:"alta", agente:"Miguel Frías", lauraOn:false, llamadas:4, contactos:2, estadoVenta:"presupuesto", fecha:"22/6 16:11",
+   motivo:"Se niega a dar el IBAN por teléfono; quiere hacerlo presencialmente.", ult:"22 jun 16:11"},
+  {id:9, nombre:"Tonia J. Canals", tel:"34692030548", bolsa:"crm", tipo:"quiere_poliza", prioridad:"alta", agente:"Miguel Frías", lauraOn:false, llamadas:2, contactos:1, estadoVenta:"presupuesto", fecha:"19/6 00:03",
+   motivo:"Quiere leer la póliza completa antes de contratar. Pide envío por email.", ult:"19 jun 00:03"},
+  {id:10, nombre:"Paco de Jerez", tel:"34604915075", bolsa:"crm", tipo:"falta_iban", prioridad:"media", agente:"Miguel Frías", lauraOn:false, llamadas:5, contactos:3, estadoVenta:"iban", fecha:"19/6 15:55",
+   motivo:"Derivado desde Revisión. Pendiente de cerrar IBAN con seguimiento humano.", ult:"19 jun 15:55"},
+  {id:11, nombre:"Emilio García", tel:"34653773993", bolsa:"crm", tipo:"vendido", prioridad:"baja", agente:"Miguel Frías", lauraOn:false, llamadas:3, contactos:4, estadoVenta:"vendida", fecha:"18/6 07:44",
+   motivo:"Venta cerrada, en proceso de emisión. Solo seguimiento administrativo.", ult:"18 jun 07:44"},
+  {id:15, nombre:"Osvaldo Ramón Gigena", tel:"34611169604", bolsa:"crm", tipo:"quiere_poliza", prioridad:"media", agente:"Miguel Frías", lauraOn:false, llamadas:2, contactos:1, estadoVenta:"presupuesto", fecha:"19/6 11:38",
+   motivo:"Pide ver condiciones de la póliza antes de decidir. Interesado.", ult:"19 jun 11:38"},
+  {id:16, nombre:"Jose Ramon Aribau Sorolla", tel:"34634311912", bolsa:"crm", tipo:"falta_iban", prioridad:"media", agente:"Miguel Frías", lauraOn:false, llamadas:6, contactos:2, estadoVenta:"iban", fecha:"18/6 17:27",
+   motivo:"Cierre verbal hecho. Falta capturar IBAN para emitir.", ult:"18 jun 17:27"},
+  {id:17, nombre:"toñi cascales ferrandiz", tel:"34654322636", bolsa:"pendiente", tipo:"falta_iban_no_contesta", agente:"Miguel Frías", lauraOn:true, llamadas:2, contactos:0, estadoVenta:"introduccion", fecha:"22/6 16:13",
+   motivo:"Quedó a las 18:00 para dar el IBAN. Laura llamó 2 veces y no coge.", ult:"23 jun 12:13"},
+  {id:18, nombre:"Dagoberto Hernandez Gonzalez", tel:"34698411725", bolsa:"crm", tipo:"vendido", prioridad:"baja", agente:"Miguel Frías", lauraOn:false, llamadas:3, contactos:2, estadoVenta:"no_cerrado", fecha:"17/6 15:46",
+   motivo:"Se enfrió tras el presupuesto. Marcado como no cerrado.", ult:"17 jun 15:46"},
+  {id:12, nombre:"Silvana E. Didier", tel:"34608140260", bolsa:"nocontesta", tipo:"no_contesta", lauraOn:true, llamadas:30,
+   estadoGlobal:"No lo coge", estadoLead:"No lo coge", motivo:"30 llamadas sin contacto efectivo.", ult:"23 jun 12:40"},
+  {id:13, nombre:"Rafael Galvez Benítez", tel:"34619769018", bolsa:"archivados", tipo:"no_contesta", lauraOn:false, llamadas:42,
+   motivo:"No interesado tras múltiples intentos. Archivado por el agente.", ult:"22 jun 16:39"},
+  {id:14, nombre:"Lola Zorrilla Segarra", tel:"34625661924", bolsa:"revision", tipo:"vendido", lauraOn:true, llamadas:6,
+   motivo:"Marcado como vendido por Laura. Requiere validación humana del cierre.", ult:"22 jun 16:06"},
+];
+
+const TIPOS = {
+  no_contesta:           {label:"No contesta", cls:"gray"},
+  vendido:               {label:"Vendido", cls:"green"},
+  falta_iban:            {label:"Falta de IBAN", cls:"amber"},
+  falta_iban_no_contesta:{label:"Falta IBAN · no coge seguimiento", cls:"red"},
+  quiere_humano:         {label:"Pide hablar con humano", cls:"violet"},
+  quiere_poliza:         {label:"Quiere ver la póliza", cls:"blue"},
+  falta_iban_problemas:  {label:"Falta de IBAN con problemas", cls:"red"},
+};
+const PRIOS = {
+  urgente:{label:"Urgente", color:"#e23b46"},
+  alta:   {label:"Alta",    color:"#e08a17"},
+  media:  {label:"Media",   color:"#2563eb"},
+  baja:   {label:"Baja",    color:"#94a3b8"},
+};
+const VENTA = {
+  introduccion:{label:"Introducción", cls:"gray"},
+  presupuesto: {label:"Presupuesto",  cls:"blue"},
+  iban:        {label:"IBAN",         cls:"amber"},
+  cierre:      {label:"Cierre",       cls:"violet"},
+  vendida:     {label:"Venta cerrada",cls:"green"},
+  no_cerrado:  {label:"No cerrado",   cls:"red"},
+};
+let crmFilter="todas";
+
+const TIMELINE = {
+  default:[
+    {when:"22 jun · 16:42", what:"<b>Laura</b> · Llamada saliente — no contesta", cls:"bad"},
+    {when:"22 jun · 16:10", what:"<b>Laura</b> · Llamada saliente — no contesta", cls:"bad"},
+    {when:"22 jun · 11:30", what:"<b>Laura</b> · Llamada saliente — buzón de voz", cls:"warn"},
+    {when:"21 jun · 18:05", what:"<b>Laura</b> · Primera toma de contacto. Lead caliente importado.", cls:"ok"},
+  ]
+};
+
+/* ============ ESTADO / RENDER ============ */
+let view = "nocontesta";
+const VIEWS = {
+  nocontesta: {title:"No Contesta", sub:"Laura sigue llamando. Pásalo al CRM Comercial o archívalo.", ico:"📵"},
+  revision:   {title:"Revisión", sub:"Vendido y Falta de IBAN pendientes de decidir: ¿al equipo o sigue Laura?", ico:"🔍"},
+  pendiente:  {title:"Pendiente de gestionar", sub:"Clasifica cada lead y asígnale una prioridad para pasarlo al CRM Comercial.", ico:"🗂"},
+  crm:        {title:"CRM Comercial", sub:"Leads en gestión humana, ordenados por prioridad", ico:"👤"},
+  archivados: {title:"Archivados", sub:"Papelera del Lead ID. Restaurable desde aquí.", ico:"🗑"},
+};
+
+function counts(){
+  const c={nocontesta:0,revision:0,pendiente:0,crm:0,archivados:0};
+  LEADS.forEach(l=>c[l.bolsa]!==undefined&&c[l.bolsa]++);
+  return c;
+}
+function noContestaLocked(){
+  return leadsIn("revision").length>0 || leadsIn("pendiente").length>0;
+}
+function refreshBadges(){
+  const c=counts();
+  document.querySelectorAll("[data-count]").forEach(b=>b.textContent=c[b.dataset.count]);
+  // lock icon on No Contesta
+  const nc=document.querySelector('.nav-item[data-view="nocontesta"] .ico');
+  if(nc) nc.textContent = noContestaLocked() ? "🔒" : "📵";
+}
+function setView(v){
+  view=v;
+  document.querySelectorAll(".nav-item[data-view]").forEach(n=>n.classList.toggle("active",n.dataset.view===v));
+  document.getElementById("hTitle").textContent=VIEWS[v].title;
+  document.getElementById("hSub").textContent=VIEWS[v].sub;
+  document.getElementById("hIco").textContent=VIEWS[v].ico;
+  render();
+}
+function leadsIn(b){return LEADS.filter(l=>l.bolsa===b);}
+
+function pill(tipo){const t=TIPOS[tipo];return `<span class="pill ${t.cls}">${t.label}</span>`;}
+function tint(tipo){
+  if(["falta_iban_no_contesta","falta_iban_problemas"].includes(tipo))return"tint-red";
+  if(tipo==="vendido")return"tint-green";
+  if(tipo==="falta_iban")return"tint-amber";
+  if(tipo==="quiere_humano")return"tint-violet";
+  return"";
+}
+
+function render(){
+  const el=document.getElementById("content");
+  if(view==="nocontesta")      el.innerHTML=renderNoContesta();
+  else if(view==="revision")   el.innerHTML=renderRevision();
+  else if(view==="pendiente")  el.innerHTML=renderPendiente();
+  else if(view==="crm")        el.innerHTML=renderCRM();
+  else if(view==="archivados") el.innerHTML=renderArchivados();
+  refreshBadges();
+}
+
+/* ---- toolbar reutilizable ---- */
+function toolbar(ph){
+  return `<div class="toolbar">
+    <div class="search"><span>🔍</span><input placeholder="${ph}"></div>
+    <button class="filter-chip">⚙ Filtros</button>
+  </div>`;
+}
+
+/* ---- NO CONTESTA (formato Lead ID, todo gris) ---- */
+function renderNoContesta(){
+  if(noContestaLocked()){
+    const r=leadsIn("revision").length, p=leadsIn("pendiente").length;
+    return `
+    <div class="lock">
+      <div class="lock-ico">🔒</div>
+      <h2>No Contesta está bloqueado</h2>
+      <p>Antes de bajar a la cola de no contactados, vacía primero lo que requiere decisión.
+      Quedan <b>${r}</b> en Revisión y <b>${p}</b> en Pendiente de gestionar.</p>
+      <div class="lock-btns">
+        ${r?`<button class="btn primary btn-lg" onclick="setView('revision')">Ir a Revisión · ${r}</button>`:""}
+        ${p?`<button class="btn primary btn-lg" onclick="setView('pendiente')">Ir a Pendiente de gestionar · ${p}</button>`:""}
+      </div>
+      <div class="lock-note">Se desbloquea automáticamente cuando ambas bandejas estén vacías.</div>
+    </div>`;
+  }
+  const rows=leadsIn("nocontesta");
+  return `
+  <div class="banner"><span class="bico">📵</span><div><b>Vista 360° de cada no contactado — ${rows.length} leads.</b> Laura sigue llamando en segundo plano. Por línea: <b>Pasar a CRM Comercial</b> (Laura se para sola al enviar) o <b>Archivar</b>.</div></div>
+  ${toolbar("Buscar por nombre, teléfono, email, ciudad…")}
+  <div class="panel"><table>
+    <thead><tr>
+      <th>Nombre</th><th>Teléfono</th><th>Tipo</th><th>Llamadas</th><th>Tipo llamada</th><th>Estado Global</th><th>Estado Lead</th><th>Última actividad</th><th style="text-align:right">Acciones</th>
+    </tr></thead>
+    <tbody>${rows.map(l=>`
+      <tr class="tint-gray">
+        <td><span class="name" onclick="openDrawer(${l.id})">${l.nombre}</span></td>
+        <td class="tel">${l.tel}</td>
+        <td>Decesos</td>
+        <td><span class="calls">${l.llamadas}</span></td>
+        <td><span class="pill gray">Outbound</span></td>
+        <td class="muted">${l.estadoGlobal||"No lo coge"}</td>
+        <td class="muted">${l.estadoLead||"No lo coge"}</td>
+        <td class="muted" style="white-space:nowrap">${l.ult}</td>
+        <td><div class="acts">
+          <button class="btn primary btn-lg" onclick="moveTo(${l.id},'crm')">→ CRM Comercial</button>
+          <button class="btn danger btn-lg" onclick="moveTo(${l.id},'archivados')">🗑 Archivar</button>
+        </div></td>
+      </tr>`).join("")||emptyRow(9,"No hay leads esperando en esta bandeja.")}
+    </tbody>
+  </table></div>`;
+}
+function lauraTag(l){
+  return l.lauraOn
+    ? `<span class="laura on"><span class="wave"><i></i><i></i><i></i></span> Llamando</span>`
+    : `<span class="laura off">⏸ Parada · gestión humana</span>`;
+}
+
+/* ---- PENDIENTE DE GESTIONAR (formato Lead ID + clasificar) ---- */
+function renderPendiente(){
+  const rows=leadsIn("pendiente");
+  return `
+  <div class="banner" style="border-left-color:#6366f1"><span class="bico">🗂</span><div><b>Clasifica para liberar al equipo.</b> Estos llegaron en automático (pide humano, falta de IBAN no contesta, quiere ver la póliza…). Asígnale una <b>prioridad</b> y pásalo al CRM Comercial. Mientras haya leads aquí, No Contesta sigue bloqueado.</div></div>
+  ${toolbar("Buscar por nombre, teléfono, motivo…")}
+  <div class="panel"><table>
+    <thead><tr>
+      <th>Nombre</th><th>Teléfono</th><th>Tipo</th><th>Llamadas</th><th>Motivo de entrada</th><th>Clasificar prioridad</th><th style="text-align:right">Acciones</th>
+    </tr></thead>
+    <tbody>${rows.map(l=>{
+      const prioOpts=`<option value="">— elegir —</option>`+Object.keys(PRIOS).map(k=>`<option value="${k}" ${l.prioridad===k?'selected':''}>${PRIOS[k].label}</option>`).join("");
+      return `
+      <tr class="${tint(l.tipo)}">
+        <td><span class="name" onclick="openDrawer(${l.id})">${l.nombre}</span></td>
+        <td class="tel">${l.tel}<div class="muted">Decesos</div></td>
+        <td>Decesos</td>
+        <td><span class="calls">${l.llamadas}</span></td>
+        <td class="motivo"><div class="t">${pill(l.tipo)}</div><div class="m">${l.motivo}</div></td>
+        <td><select class="prio-sel" onchange="setPrio(${l.id},this.value)"><option value="">— elegir —</option>${Object.keys(PRIOS).map(k=>`<option value="${k}" ${l.prioridad===k?'selected':''}>${PRIOS[k].label}</option>`).join("")}</select></td>
+        <td><div class="acts">
+          <button class="btn primary" onclick="clasificar(${l.id})">→ Pasar a CRM Comercial</button>
+          <button class="icon-btn" title="Archivar" onclick="moveTo(${l.id},'archivados')">🗑</button>
+        </div></td>
+      </tr>`;}).join("")||emptyRow(7,"Nada pendiente de clasificar. 👌 No Contesta queda desbloqueado.")}
+    </tbody>
+  </table></div>`;
+}
+
+/* ---- REVISIÓN ---- */
+function renderRevision(){
+  const rows=leadsIn("revision");
+  return `
+  <div class="banner" style="border-left-color:var(--amber)"><span class="bico">🔍</span><div><b>Decisión humana.</b> Cierres marcados como Vendido o Falta de IBAN. Valida el caso y decide: enviarlo al equipo comercial o dejar que Laura siga el seguimiento.</div></div>
+  ${toolbar("Buscar por nombre, teléfono…")}
+  <div class="panel"><table>
+    <thead><tr>
+      <th>Nombre</th><th>Teléfono</th><th>Motivo de entrada</th><th>Última actividad</th><th></th>
+    </tr></thead>
+    <tbody>${rows.map(l=>`
+      <tr class="${tint(l.tipo)}">
+        <td><span class="name" onclick="openDrawer(${l.id})">${l.nombre}</span><div class="muted">Decesos</div></td>
+        <td class="tel">${l.tel}</td>
+        <td class="motivo"><div class="t">${pill(l.tipo)}</div><div class="m">${l.motivo}</div></td>
+        <td class="muted">${l.ult}</td>
+        <td><div class="acts">
+          <button class="btn primary" onclick="moveTo(${l.id},'crm')">→ CRM Comercial</button>
+          <button class="btn ghost-green" onclick="dejarLaura(${l.id})">↩ Dejar a Laura</button>
+          <button class="icon-btn" title="Archivar" onclick="moveTo(${l.id},'archivados')">🗑</button>
+        </div></td>
+      </tr>`).join("")||emptyRow(5,"Nada pendiente de revisar. 👌")}
+    </tbody>
+  </table></div>`;
+}
+
+/* ---- CRM COMERCIAL (filas, estilo captura real) ---- */
+function renderCRM(){
+  const all=LEADS.filter(l=>l.bolsa==="crm");
+  const w={urgente:0,alta:1,media:2,baja:3};
+  const sorted=all.slice().sort((a,b)=>w[a.prioridad||'media']-w[b.prioridad||'media']);
+  const rows = crmFilter==="todas"? sorted : sorted.filter(l=>(l.prioridad||'media')===crmFilter);
+
+  // stats
+  const pendienteCount = leadsIn("pendiente").length;
+  const presup = all.filter(l=>l.estadoVenta==="presupuesto").length;
+  const vendidas = all.filter(l=>l.estadoVenta==="vendida").length;
+  const noCerr = all.filter(l=>l.estadoVenta==="no_cerrado").length;
+  const cierre = (vendidas+noCerr)? Math.round(vendidas/(vendidas+noCerr)*100):0;
+  const noContestaCount = leadsIn("nocontesta").length;
+
+  // priority chips
+  const order=["urgente","alta","media","baja"];
+  const chips = `<button class="chip ${crmFilter==='todas'?'on':''}" onclick="setCrmFilter('todas')">Todas <span class="cc">${all.length}</span></button>` +
+    order.map(p=>{const n=all.filter(l=>(l.prioridad||'media')===p).length;
+      return `<button class="chip ${crmFilter===p?'on':''}" onclick="setCrmFilter('${p}')"><span class="pdot" style="background:${PRIOS[p].color}"></span>${PRIOS[p].label} <span class="cc">${n}</span></button>`;}).join("");
+
+  return `
+  <div class="stats">
+    <div class="stat" style="cursor:pointer" onclick="setView('pendiente')"><div class="sicon" style="background:var(--violet-soft);color:var(--violet)">🗂</div><div><div class="n">${pendienteCount}</div><div class="l">Pendiente de gestionar</div></div></div>
+    <div class="stat"><div class="sicon" style="background:#eef2f7;color:#475569">👥</div><div><div class="n">${noContestaCount}</div><div class="l">Leads No Contesta</div></div></div>
+    <div class="stat"><div class="sicon" style="background:var(--blue-soft);color:var(--blue)">📄</div><div><div class="n">${presup}</div><div class="l">Presupuestados</div></div></div>
+    <div class="stat"><div class="sicon" style="background:var(--green-soft);color:var(--green)">◴</div><div><div class="n">${cierre}%</div><div class="l">Tasa de cierre</div></div></div>
+    <div class="stat"><div class="sicon" style="background:var(--red-soft);color:var(--red)">⚑</div><div><div class="n">${all.filter(l=>l.prioridad==='urgente').length}</div><div class="l">Urgentes</div></div></div>
+  </div>
+
+  <div class="crm-bar">
+    <div class="crm-tabs">
+      <button class="filter-chip">⚙ Filtros</button>
+      <button class="filter-chip">Leads Pendientes</button>
+      <button class="filter-chip">No Contesta</button>
+      <button class="filter-chip">Presupuestados</button>
+    </div>
+    <div class="crm-actions">
+      <button class="btn danger" style="background:var(--red);color:#fff;border-color:var(--red)">⏹ Stop Leads</button>
+      <button class="btn">＋ Añadir Lead</button>
+      <button class="btn">⊕ Solicitar más leads</button>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <div class="ff"><label>Nombre</label><input placeholder="Buscar..."></div>
+    <div class="ff"><label>Teléfono</label><input placeholder="Buscar..."></div>
+    <div class="ff"><label>Estado</label><select><option>Todos</option><option>Presupuesto</option><option>IBAN</option><option>Venta cerrada</option><option>No cerrado</option></select></div>
+    <div class="ff"><label>Desde</label><input type="date"></div>
+    <div class="ff"><label>Hasta</label><input type="date"></div>
+  </div>
+
+  <div class="banner"><span class="bico">👤</span><div><b>Gestión humana, ordenada por prioridad.</b> Los leads llegan aquí ya clasificados desde Pendiente de gestionar. Reordena la prioridad con el selector de cada fila, cambia el estado de venta en línea y archiva lo que ya no toca.</div></div>
+
+  <div class="chips">${chips}</div>
+
+  <div class="panel"><table>
+    <thead><tr>
+      <th>Fecha</th><th>Nombre</th><th>Teléfono</th><th>Prioridad</th><th>Contactos</th><th>Estado</th><th style="text-align:right">Acciones</th>
+    </tr></thead>
+    <tbody>${rows.map(l=>{
+      const tintCls = l.estadoVenta==="vendida"?"tint-green":l.estadoVenta==="no_cerrado"?"tint-red":"";
+      const opts=Object.keys(VENTA).map(k=>`<option value="${k}" ${l.estadoVenta===k?'selected':''}>${VENTA[k].label}</option>`).join("");
+      const prioOpts=Object.keys(PRIOS).map(k=>`<option value="${k}" ${l.prioridad===k?'selected':''}>${PRIOS[k].label}</option>`).join("");
+      return `
+      <tr class="lb-${l.prioridad||'media'} ${tintCls}">
+        <td class="muted" style="white-space:nowrap">${l.fecha}</td>
+        <td>
+          <span class="name" onclick="openDrawer(${l.id})">${l.nombre}</span>
+          <div style="margin-top:4px">${pill(l.tipo)}</div>
+          <div class="m muted" style="max-width:300px;margin-top:4px">${l.motivo}</div>
+        </td>
+        <td class="tel">${l.tel}<div class="muted">Decesos</div></td>
+        <td><div class="prio-cell"><span class="pdot" style="background:${PRIOS[l.prioridad||'media'].color}"></span><select class="prio-sel" onchange="setPrio(${l.id},this.value)">${prioOpts}</select></div></td>
+        <td><div class="stepper"><button onclick="incContactos(${l.id},-1)">−</button><span class="cn">${l.contactos}</span><button onclick="incContactos(${l.id},1)">+</button></div></td>
+        <td><select class="estado-sel" onchange="setVenta(${l.id},this.value)">${opts}</select></td>
+        <td><div class="acts">
+          ${l.estadoVenta==="vendida"
+            ? `<button class="lnk amber" onclick="setVenta(${l.id},'presupuesto')">↺ Revertir venta</button>`
+            : `<button class="lnk green" onclick="setVenta(${l.id},'vendida')">✓ Venta cerrada</button>`}
+          ${l.estadoVenta==="no_cerrado"
+            ? `<button class="lnk blue" onclick="setVenta(${l.id},'presupuesto')">↺ Reabrir</button>`
+            : `<button class="lnk red" onclick="setVenta(${l.id},'no_cerrado')">✕ No cerrado</button>`}
+          ${l.lauraOn
+            ? `<button class="lnk amber" onclick="pararLaura(${l.id})">☐ Parar Laura</button>`
+            : `<button class="lnk" onclick="reanudarLaura(${l.id})">▣ Parado</button>`}
+          <button class="lnk blue" onclick="transferir(${l.id})">➤ Transferir</button>
+          <button class="lnk red" onclick="moveTo(${l.id},'archivados')">🗑 Archivar</button>
+        </div></td>
+      </tr>`;}).join("")||emptyRow(7,"No hay leads en esta prioridad.")}
+    </tbody>
+  </table></div>`;
+}
+
+/* ---- ARCHIVADOS ---- */
+function renderArchivados(){
+  const rows=leadsIn("archivados");
+  return `
+  <div class="banner" style="border-left-color:#94a3b8"><span class="bico">🗑</span><div><b>Papelera del Lead ID.</b> Leads retirados desde cualquier bandeja. Conserva su línea temporal y se pueden restaurar en cualquier momento.</div></div>
+  ${toolbar("Buscar en archivados…")}
+  <div class="panel"><table>
+    <thead><tr>
+      <th>Nombre</th><th>Teléfono</th><th>Motivo de entrada</th><th>Archivado</th><th></th>
+    </tr></thead>
+    <tbody>${rows.map(l=>`
+      <tr>
+        <td><span class="name" onclick="openDrawer(${l.id})">${l.nombre}</span><div class="muted">Decesos</div></td>
+        <td class="tel">${l.tel}</td>
+        <td class="motivo"><div class="t">${pill(l.tipo)}</div><div class="m">${l.motivo}</div></td>
+        <td class="muted">${l.ult}</td>
+        <td><div class="acts">
+          <button class="btn ghost-green" onclick="restaurar(${l.id})">↩ Restaurar</button>
+        </div></td>
+      </tr>`).join("")||emptyRow(5,"La papelera está vacía.")}
+    </tbody>
+  </table></div>`;
+}
+
+function emptyRow(cols,txt){return `<tr><td colspan="${cols}" style="text-align:center;color:var(--ink-3);padding:34px">${txt}</td></tr>`;}
+
+/* ============ ACCIONES ============ */
+function find(id){return LEADS.find(l=>l.id===id);}
+
+function pararLaura(id){
+  const l=find(id); l.lauraOn=false;
+  toast(`⏸ Laura parada para <b>${l.nombre}</b>. El lead pasa a gestión humana.`);
+  render();
+}
+function reanudarLaura(id){
+  const l=find(id); l.lauraOn=true;
+  toast(`▶ Laura reanudada para <b>${l.nombre}</b>.`);
+  render();
+}
+function setVenta(id,val){
+  const l=find(id); l.estadoVenta=val;
+  toast(`<b>${l.nombre}</b> · ${VENTA[val].label}`);
+  render();
+}
+function incContactos(id,d){
+  const l=find(id); l.contactos=Math.max(0,(l.contactos||0)+d);
+  render();
+}
+function transferir(id){
+  const l=find(id);
+  toast(`➤ <b>${l.nombre}</b> marcado para transferir a otro agente.`);
+}
+function setCrmFilter(p){ crmFilter=p; render(); }
+function dejarLaura(id){
+  const l=find(id); l.lauraOn=true; l.bolsa="nocontesta"; // vuelve al circuito de Laura
+  toast(`↩ <b>${l.nombre}</b> vuelve al seguimiento de Laura.`);
+  render();
+}
+function moveTo(id,bolsa){
+  const l=find(id);
+  if(bolsa==="crm"){
+    l.lauraOn=false;
+    if(!l.prioridad) l.prioridad="media";
+    if(!l.estadoVenta) l.estadoVenta="introduccion";
+    if(l.contactos===undefined) l.contactos=0;
+    if(!l.agente) l.agente="Miguel Frías";
+    if(!l.fecha) l.fecha=(l.ult||"").replace(" jun ","/6 ");
+  }
+  l.bolsa=bolsa;
+  const names={crm:"CRM Comercial",archivados:"Archivados",nocontesta:"No Contesta",revision:"Revisión",pendiente:"Pendiente de gestionar"};
+  toast(`<b>${l.nombre}</b> → ${names[bolsa]}`);
+  closeDrawer(); render();
+}
+function clasificar(id){
+  const l=find(id);
+  if(!l.prioridad){
+    toast(`⚠️ Elige una prioridad para <b>${l.nombre}</b> antes de pasarlo.`);
+    return;
+  }
+  moveTo(id,"crm");
+}
+function restaurar(id){
+  const l=find(id);
+  l.bolsa = l.tipo==="no_contesta" ? "nocontesta" : "pendiente";
+  if(l.bolsa==="pendiente") l.prioridad=undefined; // vuelve a clasificarse
+  toast(`↩ <b>${l.nombre}</b> restaurado a ${l.bolsa==='nocontesta'?'No Contesta':'Pendiente de gestionar'}.`);
+  render();
+}
+function setPrio(id,val){
+  const l=find(id); l.prioridad = val||undefined;
+  if(val) toast(`Prioridad de <b>${l.nombre}</b>: ${PRIOS[val].label}`);
+  render();
+}
+function cyclePrio(id){
+  if(typeof event!=='undefined'&&event) event.stopPropagation();
+  const order=["urgente","alta","media","baja"];
+  const l=find(id);
+  const i=order.indexOf(l.prioridad||"media");
+  l.prioridad=order[(i+1)%order.length];
+  toast(`Prioridad de <b>${l.nombre}</b>: ${PRIOS[l.prioridad].label}`);
+  render();
+}
+
+/* ============ DRAWER + JSON ============ */
+function openDrawer(id){
+  const l=find(id);
+  document.getElementById("drName").textContent=l.nombre;
+  document.getElementById("drTags").innerHTML =
+    pill(l.tipo) +
+    (l.prioridad?`<span class="prio"><span class="pdot" style="background:${PRIOS[l.prioridad].color}"></span>${PRIOS[l.prioridad].label}</span>`:"") +
+    lauraTag(l);
+
+  const jsonPayload =
+`{
+  <span class="key">"lead_id"</span>: <span class="num">${l.id}</span>,
+  <span class="key">"telefono"</span>: <span class="str">"${l.tel}"</span>,
+  <span class="key">"producto"</span>: <span class="str">"decesos"</span>,
+  <span class="key">"tipo"</span>: <span class="str">"${l.tipo}"</span>,
+  <span class="key">"motivo"</span>: <span class="str">"${l.motivo.replace(/"/g,'\\"')}"</span>,
+  <span class="key">"llamadas"</span>: <span class="num">${l.llamadas}</span>,
+  <span class="key">"laura_activa"</span>: ${l.lauraOn?'<span class="num">true</span>':'<span class="num">false</span>'},
+  <span class="key">"destino"</span>: <span class="str">"${l.bolsa}"</span>
+}`;
+
+  document.getElementById("drBody").innerHTML=`
+    <div class="dr-sec-t">Datos del lead</div>
+    <div class="kv"><span class="k">Teléfono</span><span class="v">${l.tel}</span></div>
+    <div class="kv"><span class="k">Producto</span><span class="v">Decesos</span></div>
+    <div class="kv"><span class="k">Llamadas de Laura</span><span class="v">${l.llamadas}</span></div>
+    <div class="kv"><span class="k">Bandeja actual</span><span class="v">${VIEWS[l.bolsa]?.title||l.bolsa}</span></div>
+
+    <div class="dr-sec-t">Motivo de entrada</div>
+    <div style="background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:12px 14px;font-size:13px;color:var(--ink-2)">${l.motivo}</div>
+
+    <div class="dr-sec-t">Payload recibido (JSON)</div>
+    <div class="json">${jsonPayload}</div>
+
+    <div class="dr-sec-t">Línea temporal del cliente</div>
+    <div class="tl">${TIMELINE.default.map(t=>`
+      <div class="tl-item ${t.cls}"><div class="tl-when">${t.when}</div><div class="tl-what">${t.what}</div></div>`).join("")}
+    </div>`;
+
+  // footer actions contextual
+  let foot="";
+  if(l.bolsa==="nocontesta") foot = `<button class="btn primary" onclick="moveTo(${l.id},'crm')">→ CRM Comercial</button>`;
+  else if(l.bolsa==="revision") foot=`<button class="btn primary" onclick="moveTo(${l.id},'crm')">→ CRM Comercial</button><button class="btn ghost-green" onclick="dejarLaura(${l.id})">↩ Dejar a Laura</button>`;
+  else if(l.bolsa==="pendiente") foot=`<button class="btn primary" onclick="clasificar(${l.id})">→ Pasar a CRM (con prioridad)</button><button class="btn" onclick="cyclePrio(${l.id})">⇅ Prioridad</button>`;
+  else if(l.bolsa==="crm") foot=`
+    ${l.estadoVenta==="vendida"?`<button class="btn warn" onclick="setVenta(${l.id},'presupuesto')">↺ Revertir venta</button>`:`<button class="btn ghost-green" onclick="setVenta(${l.id},'vendida')">✓ Venta cerrada</button>`}
+    ${l.estadoVenta==="no_cerrado"?`<button class="btn" onclick="setVenta(${l.id},'presupuesto')">↺ Reabrir</button>`:`<button class="btn danger" onclick="setVenta(${l.id},'no_cerrado')">✕ No cerrado</button>`}
+    <button class="btn" onclick="cyclePrio(${l.id})">⇅ Prioridad</button>
+    <button class="btn primary" onclick="transferir(${l.id})">➤ Transferir</button>`;
+  else if(l.bolsa==="archivados") foot=`<button class="btn ghost-green" onclick="restaurar(${l.id})">↩ Restaurar</button>`;
+  foot+=`<button class="btn danger" onclick="moveTo(${l.id},'archivados')">🗑 Archivar</button>`;
+  document.getElementById("drFoot").innerHTML=foot;
+
+  document.getElementById("drawer").classList.add("show");
+  document.getElementById("scrim").classList.add("show");
+}
+function closeDrawer(){
+  document.getElementById("drawer").classList.remove("show");
+  document.getElementById("scrim").classList.remove("show");
+}
+
+/* ============ TOAST ============ */
+function toast(html){
+  const w=document.getElementById("toastWrap");
+  const t=document.createElement("div");
+  t.className="toast"; t.innerHTML=`<span class="ti">✓</span><span>${html}</span>`;
+  w.appendChild(t);
+  setTimeout(()=>{t.style.opacity="0";t.style.transform="translateY(8px)";t.style.transition=".3s";setTimeout(()=>t.remove(),300);},2600);
+}
+
+/* ============ INIT ============ */
+document.querySelectorAll(".nav-item[data-view]").forEach(n=>n.addEventListener("click",()=>setView(n.dataset.view)));
+setView("revision");
+</script>
+</body>
+</html>
